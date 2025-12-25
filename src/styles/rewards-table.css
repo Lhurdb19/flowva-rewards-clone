@@ -1,0 +1,162 @@
+/* rewards-table.css */
+
+.rewards-table-page {
+  /* margin-top: 24px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.rewards-table-page > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rewards-table-page > span > p {
+  border-left: 3px solid #7c3aed;
+  /* margin: 0px 20px; */
+  display: flex;
+  height: 30px;
+}
+
+/* SWITCH */
+.rewards-switch {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rewards-switch::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* BUTTON HOVER GLOW */
+.rewards-switch button {
+  position: relative;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.rewards-switch button::before {
+  content: "";
+  position: absolute;
+  inset: -6px -12px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #893FFE, #74BBFF);
+  opacity: 0;
+  filter: blur(14px);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.rewards-switch button:hover::before {
+  opacity: 0.25;
+}
+
+.rewards-switch button.active::before {
+  opacity: 0.35;
+}
+
+.rewards-switch button:hover {
+  color: #7c3aed;
+}
+
+
+.rewards-switch button.active {
+  color: #9013fe;
+  font-weight: 600;
+}
+
+/* SLIDING LINE */
+.switch-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #893FFE, #9013fe);
+  border-radius: 2px;
+}
+
+/* reward count background  */
+.bg-count {
+  width: 10px;
+  height: 10px;
+  background-color: #e0e7ff;
+  padding: 3px 8px;
+  border-radius: 50%;
+}
+
+
+/* GRID */
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* BOX */
+.reward-box {
+  width: 86%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  cursor: not-allowed;
+}
+
+.reward-icons {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-box h4 {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* BADGES */
+.badge {
+  width: 100%;
+  font-size: 11px;
+  padding: 10px 60px;
+  border-radius: 9px;
+}
+
+.badge.locked {
+  background: #e1e8f1;
+  color: #fff;
+}
+
+.badge.unlocked {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.soon {
+  background: #e0e7ff;
+  color: #3730a3;
+  background: #e1e8f1;
+  color: #fff;
+}
+
+.empty-text {
+  color: #9ca3af;
+  font-size: 14px;
+}

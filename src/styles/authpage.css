@@ -1,0 +1,197 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7e3ff2, #c084fc);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  padding: 20px;
+}
+
+.auth-card h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #7e3ff2;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.auth-card p {
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-card > form {
+  width: 100%;
+  margin-right: 20px;
+}
+
+.auth-card input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px;
+  outline: none;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-card input:focus {
+  border-color: #c084fc;
+  box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.3);
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 60px; /* space for toggle */
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 15px 10px;
+  outline: none;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.password-wrapper input:focus {
+  border-color: #c084fc;
+  box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.3);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-70%);
+  cursor: pointer;
+  color: #7e3ff2;
+  font-size: 12px;
+}
+
+.toggle-password:hover {
+  opacity: 0.8;
+}
+
+.forgot-password {
+  display: flex;
+  justify-content: flex-end;
+  text-align: end;
+  color: #7e3ff2;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+    color: #7e3ff2;
+}
+
+.toggle-account {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.auth-card .submit-btn {
+  width: 100%;
+  padding: 0.75rem 0;
+  border-radius: 9999px;
+  font-weight: 600;
+  background: linear-gradient(to right, #7e3ff2, #c084fc);
+  color: white;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-card .submit-btn:hover {
+  background: linear-gradient(to right, #9333ea, #d8b4fe);
+}
+
+.auth-card .toggle-btn {
+  color: #7e3ff2;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+
+.auth-card .toggle-btn:hover {
+  opacity: 0.8;
+}
+
+/* Divider "or" */
+.auth-card .divider {
+  text-align: center;
+  color: #9ca3af;
+  margin: 1rem 0;
+}
+
+/* Google button */
+.auth-card .google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 0;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-card .google-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.auth-card .google-btn img {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+
+.submit-btn {
+  position: relative;
+  min-width: 150px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
