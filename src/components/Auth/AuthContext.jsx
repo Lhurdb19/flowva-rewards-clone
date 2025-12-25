@@ -93,6 +93,37 @@ export const AuthProvider = ({ children }) => {
     toast.success("Login successful!");
   };
 
+  const signInWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin, // returns user back to your app
+    },
+  });
+
+  if (error) {
+    toast.error(error.message || "Google sign-in failed");
+  }
+};
+
+const forgotPassword = async (email) => {
+  if (!email) {
+    toast.error("Please enter your email first");
+    return;
+  }
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + "/reset-password", // user lands on your ResetPassword page
+  });
+
+  if (error) {
+    toast.error(error.message);
+  } else {
+    toast.success("Password reset email sent! Check your inbox.");
+  }
+};
+
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) return toast.error(error.message);
@@ -102,7 +133,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signInWithGoogle, forgotPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

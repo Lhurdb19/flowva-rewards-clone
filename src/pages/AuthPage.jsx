@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import "../styles/authpage.css";
 
 export default function AuthPage() {
-  const { signUp, signIn, loading } = useAuth();
+  const { signUp, signIn, loading, signInWithGoogle, forgotPassword } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,6 +12,7 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,7 +82,14 @@ export default function AuthPage() {
             </div>
           )}
 
-          {isLogin && <p className="forgot-password">Forgot Password?</p>}
+          <p
+  className="forgot-password"
+  onClick={() => forgotPassword(email)}
+  style={{ cursor: "pointer" }}
+>
+  Forgot Password?
+</p>
+
 
           <button type="submit" className="submit-btn" disabled={btnLoading}>
             {btnLoading ? (
@@ -96,7 +104,7 @@ export default function AuthPage() {
 
         <div className="divider">or</div>
 
-        <button className="google-btn">
+        <button className="google-btn" onClick={signInWithGoogle}>
           <img src="/google-logo.png" alt="Google" />
           Sign in with Google
         </button>
