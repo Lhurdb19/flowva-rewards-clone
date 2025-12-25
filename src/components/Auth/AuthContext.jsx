@@ -8,101 +8,97 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch user and subscribe to auth changes
   useEffect(() => {
     const getUser = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
-        setUser(user);
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setUser(null);
-      } finally {
-        setLoading(false);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+
+      // Create profile if not exists (after login)
+      if (user) {
+        await createProfileIfNotExists(user.id, user.email);
       }
     };
+
     getUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-        setLoading(false);
+      async (event, session) => {
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+
+        // Create profile after login/signup
+        if (currentUser) {
+          await createProfileIfNotExists(currentUser.id, currentUser.email);
+        }
       }
     );
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email, password) => {
-    setLoading(true);
+  // Create profile only if it doesn't exist
+  const createProfileIfNotExists = async (userId, email) => {
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { data: existingProfile, error } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
 
-      if (authError) {
-        toast.error(authError.message || "Signup failed");
-        return;
+      if (!existingProfile) {
+        const { error: insertError } = await supabase.from("profiles").insert({
+          id: userId,
+          email,
+          username: email.split("@")[0],
+        });
+
+        if (insertError) {
+          console.error("Failed to create profile:", insertError);
+          toast.error(`Failed to create profile: ${insertError.message}`);
+        } else {
+          console.log("Profile created successfully");
+        }
       }
-
-      const userId = authData.user.id;
-      if (!userId) throw new Error("No user ID returned from Supabase.");
-
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: userId,
-        email,
-        username: email.split("@")[0],
-      });
-
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        toast.error(`Failed to create profile: ${profileError.message}`);
-        return;
-      }
-
-      toast.success(
-        "Account created successfully! Please check your email to confirm."
-      );
     } catch (err) {
-      console.error("Unexpected signup error:", err);
-      toast.error("Signup failed. Try again.");
-    } finally {
-      setLoading(false);
+      console.error("Error checking/creating profile:", err);
     }
+  };
+
+  const signUp = async (email, password) => {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError) {
+      toast.error(authError.message || "Signup failed");
+      return;
+    }
+
+    toast.success(
+      "Account created! Please check your email to confirm before logging in."
+    );
   };
 
   const signIn = async (email, password) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      toast.success("Login successful!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Login failed.");
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Login successful!");
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) return toast.error(error.message);
+    const { error } = await supabase.auth.signOut();
+    if (error) return toast.error(error.message);
 
-      toast.success("Logged out successfully");
-      window.location.href = "/login";
-    } catch (err) {
-      console.error(err);
-      toast.error("Logout failed.");
-    }
+    toast.success("Logged out successfully");
+    window.location.href = "/login";
   };
 
   return (
