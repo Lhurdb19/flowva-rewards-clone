@@ -36,7 +36,6 @@ export default function RewardsTable() {
         <h2>Redeem Your Points</h2>
       </span>
 
-      {/* SWITCH */}
       <div className="rewards-switch">
         {tabs.map((tab) => (
           <button
@@ -61,7 +60,6 @@ export default function RewardsTable() {
         ))}
       </div>
 
-      {/* CONTENT */}
       <div className="rewards-grid">
         {filteredRewards.length === 0 ? (
           <p className="empty-text">No rewards available.</p>

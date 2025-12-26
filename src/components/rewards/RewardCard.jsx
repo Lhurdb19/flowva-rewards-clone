@@ -258,7 +258,6 @@ export default function RewardCard() {
           <div className="skeleton skel-title" />
         </span>
         <div className="cards">
-          {/* Skeleton cards */}
           <div className="card">
             <div className="card-header">
               <div className="skeleton skel-icon" />

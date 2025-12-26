@@ -7,40 +7,41 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
-  // Fetch user and subscribe to auth changes
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user);
+    setLoading(false);
+  };
+
+  getUser();
+
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      setUser(session?.user || null);
+
+      if (event === "PASSWORD_RECOVERY") {
+        setIsPasswordRecovery(true);
+      } else {
+        setIsPasswordRecovery(false);
+      }
+
       setLoading(false);
 
-      // Create profile if not exists (after login)
-      if (user) {
-        await createProfileIfNotExists(user.id, user.email);
+      if (session?.user) {
+        await createProfileIfNotExists(
+          session.user.id,
+          session.user.email
+        );
       }
-    };
+    }
+  );
 
-    getUser();
+  return () => listener.subscription.unsubscribe();
+}, []);
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-
-        // Create profile after login/signup
-        if (currentUser) {
-          await createProfileIfNotExists(currentUser.id, currentUser.email);
-        }
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  // Create profile only if it doesn't exist
   const createProfileIfNotExists = async (userId, email) => {
     try {
       const { data: existingProfile, error } = await supabase
@@ -133,9 +134,20 @@ const forgotPassword = async (email) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signInWithGoogle, forgotPassword, signOut }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider
+  value={{
+    user,
+    loading,
+    isPasswordRecovery,
+    signUp,
+    signIn,
+    signInWithGoogle,
+    forgotPassword,
+    signOut,
+  }}
+>
+  {children}
+</AuthContext.Provider>
   );
 };
 

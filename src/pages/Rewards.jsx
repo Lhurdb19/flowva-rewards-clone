@@ -21,7 +21,6 @@ export default function Rewards() {
     <DashboardLayout>
       <header className="navbar">
   <div className="navbar-left">
-    {/* Hamburger inside navbar */}
     <button
       className={`hamburger-btn ${open ? "open" : ""}`}
       onClick={() => setOpen((prev) => !prev)}
