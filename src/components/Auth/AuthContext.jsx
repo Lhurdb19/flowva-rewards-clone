@@ -10,41 +10,43 @@ export const AuthProvider = ({ children }) => {
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
-  const getUser = async () => {
-    const { data } = await supabase.auth.getUser();
-    setUser(data.user);
-    setLoading(false);
-  };
-
-  getUser();
-
-  const { data: listener } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      setUser(session?.user || null);
-
-      if (event === "PASSWORD_RECOVERY") {
-        setIsPasswordRecovery(true);
-      } else {
-        setIsPasswordRecovery(false);
-      }
-
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
       setLoading(false);
 
-      if (session?.user) {
-        await createProfileIfNotExists(
-          session.user.id,
-          session.user.email
-        );
+      if (user) {
+        await createProfileIfNotExists(user.id, user.email);
       }
-    }
-  );
+    };
 
-  return () => listener.subscription.unsubscribe();
-}, []);
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+
+        if (event === "PASSWORD_RECOVERY") {
+          setIsPasswordRecovery(true);
+        } else {
+          setIsPasswordRecovery(false);
+        }
+
+        if (currentUser) {
+          await createProfileIfNotExists(currentUser.id, currentUser.email);
+        }
+      }
+    );
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   const createProfileIfNotExists = async (userId, email) => {
     try {
-      const { data: existingProfile, error } = await supabase
+      const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", userId)
@@ -60,8 +62,6 @@ export const AuthProvider = ({ children }) => {
         if (insertError) {
           console.error("Failed to create profile:", insertError);
           toast.error(`Failed to create profile: ${insertError.message}`);
-        } else {
-          console.log("Profile created successfully");
         }
       }
     } catch (err) {
@@ -70,60 +70,43 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUp = async (email, password) => {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError) {
-      toast.error(authError.message || "Signup failed");
-      return;
-    }
-
-    toast.success(
-      "Account created! Please check your email to confirm before logging in."
-    );
+    const { error: authError } = await supabase.auth.signUp({ email, password });
+    if (authError) return toast.error(authError.message || "Signup failed");
+    toast.success("Account created! Please check your email to confirm before logging in.");
   };
 
   const signIn = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return toast.error(error.message);
     toast.success("Login successful!");
   };
 
   const signInWithGoogle = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin, // returns user back to your app
-    },
-  });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) toast.error(error.message || "Google sign-in failed");
+  };
 
-  if (error) {
-    toast.error(error.message || "Google sign-in failed");
-  }
-};
-
-const forgotPassword = async (email) => {
+  const forgotPassword = async (email) => {
   if (!email) {
     toast.error("Please enter your email first");
     return;
   }
 
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + "/reset-password", // user lands on your ResetPassword page
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + "/reset-password",
   });
 
   if (error) {
     toast.error(error.message);
   } else {
-    toast.success("Password reset email sent! Check your inbox.");
+    toast.success(
+      "Password reset email sent! Check your inbox and click the link to reset your password."
+    );
   }
 };
-
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -135,19 +118,19 @@ const forgotPassword = async (email) => {
 
   return (
     <AuthContext.Provider
-  value={{
-    user,
-    loading,
-    isPasswordRecovery,
-    signUp,
-    signIn,
-    signInWithGoogle,
-    forgotPassword,
-    signOut,
-  }}
->
-  {children}
-</AuthContext.Provider>
+      value={{
+        user,
+        loading,
+        isPasswordRecovery,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        forgotPassword,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 

@@ -46,30 +46,17 @@ export default function RewardCard() {
     return now.toISOString().split("T")[0];
   };
 
-  // Load user rewards and streaks
   useEffect(() => {
     let mounted = true;
+    if (!user) {
+      setUserLoaded(true);
+      return;
+    }
 
     const loadRewards = async () => {
       setUserLoaded(false);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        if (!mounted) return;
-        setUserId(null);
-        setPoints(0);
-        setStreak(0);
-        setClaimedToday(false);
-        setUserLoaded(true);
-        return;
-      }
-
       setUserId(user.id);
 
-      // Ensure profile exists
       let { data: profile } = await supabase
         .from("profiles")
         .select("points")
@@ -81,9 +68,9 @@ export default function RewardCard() {
         profile = { points: 0 };
       }
 
-      setPoints(profile?.points ?? 0);
+      if (!mounted) return;
+      setPoints(profile.points);
 
-      // Ensure daily_streaks exists
       let { data: streakData } = await supabase
         .from("daily_streaks")
         .select("*")
@@ -103,34 +90,27 @@ export default function RewardCard() {
       yesterday.setMinutes(yesterday.getMinutes() - yesterday.getTimezoneOffset());
       const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-      let currentStreak = streakData?.current_streak ?? 0;
+      let currentStreak = streakData.current_streak ?? 0;
+      let alreadyClaimed = false;
 
-      if (streakData?.last_claim_date === today) {
-        setClaimedToday(true);
-      } else {
-        setClaimedToday(false);
-        if (streakData?.last_claim_date !== yesterdayStr) {
-          currentStreak = 0;
-        }
+      if (streakData.last_claim_date === today) {
+        alreadyClaimed = true;
+      } else if (streakData.last_claim_date !== yesterdayStr) {
+        currentStreak = 0;
       }
 
       setStreak(currentStreak);
+      setClaimedToday(alreadyClaimed);
       setUserLoaded(true);
     };
 
     loadRewards();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      loadRewards();
-    });
-
     return () => {
       mounted = false;
-      listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [user]);
 
-  // Claim daily reward
   const claimDaily = async () => {
     if (!user) {
       toast.error("Please login to claim rewards");
@@ -145,7 +125,6 @@ export default function RewardCard() {
     const yesterdayStr = yesterday.toISOString().split("T")[0];
 
     try {
-      // Fetch streak
       let { data: streakData } = await supabase
         .from("daily_streaks")
         .select("*")
@@ -172,7 +151,6 @@ export default function RewardCard() {
           ? streakData.current_streak + 1
           : 1;
 
-      // Fetch profile
       let { data: profile } = await supabase
         .from("profiles")
         .select("points")
@@ -186,32 +164,30 @@ export default function RewardCard() {
 
       const updatedPoints = profile.points + DAILY_POINTS;
 
-      // Update everything atomically using Promise.all
-      const [pointsRes, streakRes, transactionRes, notificationRes] =
-        await Promise.all([
-          supabase.from("profiles").update({ points: updatedPoints }).eq("id", userId),
-          supabase
-            .from("daily_streaks")
-            .upsert({ id: userId, current_streak: newStreak, last_claim_date: today }),
-          supabase.from("transactions").insert({
-            user_id: userId,
-            type: "daily_reward",
-            points: DAILY_POINTS,
-            date: today,
-          }),
-          supabase.from("notifications").insert({
-            user_id: userId,
-            type: "daily_reward",
-            title: "Daily Reward Claimed! 🎉",
-            message: `You earned ${DAILY_POINTS} points for your daily streak. Keep it going!`,
-            url: "/rewards",
-          }),
-        ]);
+      await Promise.all([
+        supabase.from("profiles").update({ points: updatedPoints }).eq("id", userId),
+        supabase
+          .from("daily_streaks")
+          .upsert({ id: userId, current_streak: newStreak, last_claim_date: today }),
+        supabase.from("transactions").insert({
+          user_id: userId,
+          type: "daily_reward",
+          points: DAILY_POINTS,
+          date: today,
+        }),
+        supabase.from("notifications").insert({
+          user_id: userId,
+          type: "daily_reward",
+          title: "Daily Reward Claimed! 🎉",
+          message: `You earned ${DAILY_POINTS} points for your daily streak. Keep it going!`,
+          url: "/rewards",
+        }),
+      ]);
 
       setPoints(updatedPoints);
       setStreak(newStreak);
       setClaimedToday(true);
-      setShowClaimPopup(true);
+      setShowClaimPopup(true); 
 
       toast.success(`🎉 +${DAILY_POINTS} points added! See you tomorrow.`);
     } catch (error) {
@@ -227,7 +203,6 @@ export default function RewardCard() {
     return days.map((_, i) => (todayIndex - i + 7) % 7 < streak);
   };
 
-  // Fetch referral data
   useEffect(() => {
     if (!user) return;
 
@@ -463,7 +438,7 @@ export default function RewardCard() {
       </div>
 
       {showClaimModal && (
-        <div className="modal-overlay">
+        <div className="button-modal-overlay">
           <div className="claim-modal">
             <span className="close-top">
               <h3>Claim Your 25 Points</h3>

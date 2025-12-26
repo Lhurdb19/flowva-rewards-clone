@@ -99,12 +99,12 @@ export default function NotificationDropdown() {
           <div className="dropdown-header">
             <h4>Notifications</h4>
             <button className="icon-btn" onClick={markAllRead}>
-              <FaCheck />
+              <FaCheck className="icons"/>
               <span className="btn-text">Mark all as read</span>
             </button>
             {notifications.length > 0 && (
               <button className="icon-btn" onClick={deleteAll}>
-                <FaTrash />
+                <FaTrash className="icons" />
                 <span className="btn-text">Delete All</span>
               </button>
             )}

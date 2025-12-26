@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/authpage.css";
 
 export default function ResetPassword() {
@@ -9,6 +9,15 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get("access_token"); // from Supabase link
+
+  useEffect(() => {
+    if (!accessToken) {
+      toast.error("Invalid or expired password reset link.");
+      navigate("/login");
+    }
+  }, [accessToken, navigate]);
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -17,7 +26,6 @@ export default function ResetPassword() {
       toast.error("Password must be at least 6 characters");
       return;
     }
-
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -26,6 +34,7 @@ export default function ResetPassword() {
     setLoading(true);
 
     const { error } = await supabase.auth.updateUser({
+      accessToken, // important!
       password,
     });
 
